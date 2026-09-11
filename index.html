@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Issue Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>Attendance Issue Analyzer</h1>
+  <p>Compiler Construction Mini Project</p>
+
+<h2>Attendance Complaint Likhein</h2>
+<textarea id="issueInput" rows="4" cols="50" 
+  placeholder="I was present on 09/09/2026 but my attendance was marked absent."></textarea>
+
+<br><br>
+
+<button id="analyzeBtn">Analyze Issue</button>
+
+<h2>Phase 1: Lexical Analysis (Tokens)</h2>
+<table id="tokenTable" border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>Token #</th>
+      <th>Lexeme</th>
+      <th>Token Type</th>
+    </tr>
+  </thead>
+  <tbody id="tokenBody">
+    <tr>
+      <td colspan="3">Abhi koi token nahi — pehle Analyze Issue par click karein.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h2>Phase 2: Parser aur Syntax Analysis</h2>
+<p>Grammar Rule:</p>
+<pre>
+&lt;ISSUE&gt;    -&gt; &lt;CLAIM&gt; &lt;OPERATOR&gt; &lt;REPORT&gt;
+&lt;CLAIM&gt;    -&gt; "I" "was" &lt;STATUS&gt; "on" &lt;DATE&gt;
+&lt;REPORT&gt;   -&gt; "my" "attendance" "was" "marked" &lt;STATUS&gt;
+&lt;STATUS&gt;   -&gt; "present" | "absent"
+&lt;OPERATOR&gt; -&gt; "but" | "however" | "although"
+</pre>
+
+<div id="syntaxVerdict">Abhi analysis nahi hui.</div>
+<ul id="syntaxErrors"></ul>
+
+<h2>Phase 3: Analytical Terminal</h2>
+<div id="terminal">
+  <p>$ waiting for input...</p>
+</div>
+
+
+<h2>Final Result</h2>
+<div id="resultCard">
+  <h3 id="resultTitle">No Analysis Yet</h3>
+  <p id="resultDetail">Complaint likh kar "Analyze Issue" par click karein.</p>
+</div>
+<script src="script.js"></script>
+
+</body>
+</html>
