@@ -1,203 +1,150 @@
-// ---------- Reserved words (Grammar ki vocabulary) ----------
-const KEYWORDS = ["i", "was", "on", "my", "attendance", "marked", "present", "absent"];
-const STATUS_WORDS = ["present", "absent"];
-const OPERATORS = ["but", "however", "although", "and", "yet"];
-
-// ---------- HTML elements ko JavaScript se jorna ----------
-const issueInput = document.getElementById("issueInput");
-const analyzeBtn = document.getElementById("analyzeBtn");
-const tokenBody = document.getElementById("tokenBody");
-const syntaxVerdict = document.getElementById("syntaxVerdict");
-const syntaxErrors = document.getElementById("syntaxErrors");
-const terminal = document.getElementById("terminal");
-const resultCard = document.getElementById("resultCard");
-const resultTitle = document.getElementById("resultTitle");
-const resultDetail = document.getElementById("resultDetail");
-// =========================================================
-// PHASE 1: LEXICAL ANALYSIS
-// =========================================================
-function tokenize(text) {
-  // Pattern: pehle Date match karo, phir words, phir numbers, phir baaki symbols
-  const pattern = /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|[A-Za-z]+|\d+|[^\sA-Za-z0-9]/g;
-  const rawMatches = text.match(pattern) || [];
-
-  return rawMatches.map((lexeme) => ({
-    lexeme: lexeme,
-    type: classify(lexeme)
-  }));
+* {
+  box-sizing: border-box;
 }
 
-function classify(lexeme) {
-  const lower = lexeme.toLowerCase();
-
-  if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(lexeme)) return "Date";
-  if (/^\d+$/.test(lexeme)) return "Number";
-  if (OPERATORS.includes(lower)) return "Operator";
-  if (KEYWORDS.includes(lower)) return "Keyword";
-  if (/^[A-Za-z]+$/.test(lexeme)) return "Identifier";
-  return "Other";
-}
-function renderTokenTable(tokens) {
-  // Pehle purani rows saaf kar do
-  tokenBody.innerHTML = "";
-
-  if (tokens.length === 0) {
-    tokenBody.innerHTML = "<tr><td colspan='3'>Koi token nahi mila.</td></tr>";
-    return;
-  }
-
-  tokens.forEach((tok, index) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>T${index + 1}</td>
-      <td>${tok.lexeme}</td>
-      <td>${tok.type}</td>
-    `;
-    tokenBody.appendChild(row);
-  });
-}
-// =========================================================
-// PHASE 2: PARSER + SYNTAX ANALYSIS
-// Grammar:
-//   <ISSUE>    -> <CLAIM> <OPERATOR> <REPORT>
-//   <CLAIM>    -> "I" "was" <STATUS> "on" <DATE>
-//   <REPORT>   -> "my" "attendance" "was" "marked" <STATUS>
-// =========================================================
-function parse(tokens) {
-  const errors = [];
-
-  if (tokens.length === 0) {
-    return { valid: false, errors: ["Input khaali hai."], dates: [], statuses: [] };
-  }
-
-  const dateTokens = tokens.filter(t => t.type === "Date");
-  const statusTokens = tokens.filter(t => STATUS_WORDS.includes(t.lexeme.toLowerCase()));
-  const operatorTokens = tokens.filter(t => t.type === "Operator");
-  const hasAttendance = tokens.some(t => t.lexeme.toLowerCase() === "attendance");
-  const hasMarked = tokens.some(t => t.lexeme.toLowerCase() === "marked");
-
-  if (dateTokens.length === 0) {
-    errors.push("DATE token nahi mila. Date honi chahiye jaise 09/09/2026");
-  }
-  if (statusTokens.length < 2) {
-    errors.push("Do STATUS words chahiye (present/absent) — ek claim, ek marked status.");
-  }
-  if (operatorTokens.length === 0) {
-    errors.push("OPERATOR nahi mila. 'but', 'however' jaisa lafz chahiye.");
-  }
-  if (!hasAttendance) {
-    errors.push("Keyword 'attendance' missing hai.");
-  }
-  if (!hasMarked) {
-    errors.push("Keyword 'marked' missing hai.");
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors: errors,
-    dates: dateTokens,
-    statuses: statusTokens
-  };
-}
-function showParseResult(parseResult) {
-  if (parseResult.valid) {
-    syntaxVerdict.textContent = "✓ Valid Attendance Issue";
-    syntaxVerdict.className = "";
-    syntaxVerdict.classList.add("result-valid");
-    syntaxErrors.innerHTML = "";
-  } else {
-    syntaxVerdict.textContent = "✗ Invalid Syntax";
-    syntaxVerdict.className = "";
-    syntaxVerdict.classList.add("result-invalid");
-    syntaxErrors.innerHTML = parseResult.errors
-      .map(e => `<li>${e}</li>`)
-      .join("");
-  }
-}
-// =========================================================
-// PHASE 3: ANALYTICAL TERMINAL
-// =========================================================
-function runTerminal(steps, onDone) {
-  terminal.innerHTML = "";
-  let i = 0;
-
-  function printNext() {
-    if (i >= steps.length) {
-      if (onDone) onDone();
-      return;
-    }
-    const line = document.createElement("p");
-    line.textContent = steps[i];
-    terminal.appendChild(line);
-    terminal.scrollTop = terminal.scrollHeight;
-    i++;
-    setTimeout(printNext, 300);
-  }
-
-  printNext();
-}
-// =========================================================
-// MAIN FLOW — Jab "Analyze Issue" button click ho
-// =========================================================
-function analyze() {
-  const text = issueInput.value.trim();
-
-  // Agar khaali hai to seedha error dikha do
-  if (text === "") {
-    renderTokenTable([]);
-    runTerminal(["Input khaali hai.", "Analysis rok di gayi."]);
-    resultTitle.textContent = "Invalid Attendance Issue";
-    resultDetail.textContent = "Pehle koi complaint likhein.";
-    resultCard.className = "";
-    resultCard.classList.add("result-invalid");
-    return;
-  }
-
-  // Phase 1: Lexer
-  const tokens = tokenize(text);
-  renderTokenTable(tokens);
-
-  // Phase 2: Parser
-  const parseResult = parse(tokens);
-  showParseResult(parseResult);
-
-  // Terminal ke liye steps ki list banao
-  const steps = [
-    "Starting Lexical Analysis...",
-    "Input received.",
-    "Generating tokens...",
-    `Tokens generated successfully. (${tokens.length} tokens)`,
-    "Starting Parser...",
-    "Checking grammar rules...",
-  ];
-
-  if (parseResult.valid) {
-    steps.push("Syntax Analysis completed.");
-    steps.push("Attendance Issue Accepted.");
-  } else {
-    steps.push("Syntax Analysis completed with errors.");
-    steps.push("Attendance Issue Rejected.");
-  }
-
-  // Phase 3: Terminal chalao, aur khatam hone ke baad Final Result dikhao
-  runTerminal(steps, () => {
-    if (parseResult.valid) {
-      const dateFound = parseResult.dates[0]?.lexeme || "unknown date";
-      const claimed = parseResult.statuses[0]?.lexeme || "?";
-      const marked = parseResult.statuses[parseResult.statuses.length - 1]?.lexeme || "?";
-
-      resultTitle.textContent = "✓ Attendance Issue Accepted";
-      resultDetail.textContent = `${dateFound} ko student ne "${claimed}" claim kiya, lekin "${marked}" mark hua tha.`;
-      resultCard.className = "";
-      resultCard.classList.add("result-valid");
-    } else {
-      resultTitle.textContent = "✗ Invalid Attendance Issue";
-      resultDetail.textContent = "Complaint grammar ke mutabiq nahi hai. Upar errors dekhein.";
-      resultCard.className = "";
-      resultCard.classList.add("result-invalid");
-    }
-  });
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #F3F5FA;
+  color: #1B1F2A;
+  margin: 0;
+  padding: 20px;
+  line-height: 1.6;
 }
 
-// Button par click event laga do
-analyzeBtn.addEventListener("click", analyze);
+h1, h2, h3 {
+  color: #16213E;
+}
+
+textarea {
+  width: 100%;
+  max-width: 600px;
+  padding: 12px;
+  border: 1.5px solid #E2E6EF;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #2E5AAC;
+}
+
+button {
+  background-color: #B98B2A;
+  color: #1B1300;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #96701E;
+}
+table {
+  width: 100%;
+  max-width: 600px;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+  background-color: #FFFFFF;
+}
+
+thead th {
+  text-align: left;
+  background-color: #16213E;
+  color: #ffffff;
+  padding: 10px;
+}
+
+tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #E2E6EF;
+}
+
+tbody tr:hover {
+  background-color: #F7F8FC;
+}
+pre {
+  background-color: #F7F8FC;
+  border: 1px solid #E2E6EF;
+  border-left: 4px solid #B98B2A;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #2C3550;
+  overflow-x: auto;
+  max-width: 600px;
+}
+
+#syntaxVerdict {
+  font-weight: 700;
+  padding: 12px 16px;
+  border-radius: 8px;
+  max-width: 600px;
+  background-color: #F1F2F6;
+  color: #5B6472;
+}
+
+#syntaxErrors {
+  color: #C0392B;
+  max-width: 600px;
+}
+
+#terminal {
+  background-color: #0D1117;
+  color: #C9D1D9;
+  border-radius: 8px;
+  padding: 16px 18px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  max-width: 600px;
+  min-height: 100px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+#terminal p {
+  margin: 0 0 6px 0;
+}
+#resultCard {
+  max-width: 600px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1.5px solid #E2E6EF;
+  background-color: #F1F2F6;
+  margin-top: 10px;
+}
+
+#resultCard h3 {
+  margin: 0 0 6px 0;
+}
+
+#resultCard p {
+  margin: 0;
+  color: #5B6472;
+}
+
+/* These classes are added/removed dynamically by JavaScript */
+.result-valid {
+  background-color: #E7F6ED !important;
+  border-color: #BEE6CC !important;
+}
+
+.result-valid h3 {
+  color: #1F8A56;
+}
+
+.result-invalid {
+  background-color: #FBEAEA !important;
+  border-color: #F1C4C1 !important;
+}
+
+.result-invalid h3 {
+  color: #C0392B;
+}
