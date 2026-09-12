@@ -12,7 +12,7 @@
   <h1>Attendance Issue Analyzer</h1>
   <p>Compiler Construction Mini Project</p>
 
-<h2>Attendance Complaint Likhein</h2>
+<h2>Enter Attendance Complaint</h2>
 <textarea id="issueInput" rows="4" cols="50" 
   placeholder="I was present on 09/09/2026 but my attendance was marked absent."></textarea>
 
@@ -31,13 +31,13 @@
   </thead>
   <tbody id="tokenBody">
     <tr>
-      <td colspan="3">Abhi koi token nahi — pehle Analyze Issue par click karein.</td>
+      <td colspan="3">No tokens yet — click Analyze Issue first.</td>
     </tr>
   </tbody>
 </table>
 
 
-<h2>Phase 2: Parser aur Syntax Analysis</h2>
+<h2>Phase 2: Parser and Syntax Analysis</h2>
 <p>Grammar Rule:</p>
 <pre>
 &lt;ISSUE&gt;    -&gt; &lt;CLAIM&gt; &lt;OPERATOR&gt; &lt;REPORT&gt;
@@ -47,7 +47,7 @@
 &lt;OPERATOR&gt; -&gt; "but" | "however" | "although"
 </pre>
 
-<div id="syntaxVerdict">Abhi analysis nahi hui.</div>
+<div id="syntaxVerdict">No analysis performed yet.</div>
 <ul id="syntaxErrors"></ul>
 
 <h2>Phase 3: Analytical Terminal</h2>
@@ -59,7 +59,7 @@
 <h2>Final Result</h2>
 <div id="resultCard">
   <h3 id="resultTitle">No Analysis Yet</h3>
-  <p id="resultDetail">Complaint likh kar "Analyze Issue" par click karein.</p>
+  <p id="resultDetail">Enter a complaint and click "Analyze Issue".</p>
 </div>
 <script src="script.js"></script>
 
