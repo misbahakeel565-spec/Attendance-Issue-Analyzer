@@ -130,7 +130,7 @@ pre {
   color: #5B6472;
 }
 
-/* In classes ko JavaScript baad mein add/remove karega */
+/* These classes are added/removed dynamically by JavaScript */
 .result-valid {
   background-color: #E7F6ED !important;
   border-color: #BEE6CC !important;
